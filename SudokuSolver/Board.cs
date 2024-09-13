@@ -11,16 +11,38 @@ namespace SudokuSolver
         private Square[][] squares = new Square[3][];
         private IEnumerable<Field> fieldsList => this.fields.SelectMany(f => f);
 
-        public bool IsSolved => this.fieldsList.All(f => f.HasNumber);
+        public bool IsSolved => this.CalculateIsSolved();
         public int SolvedFieldsCount => this.fieldsList.Count(f => f.HasNumber);
         public IEnumerable<Field> FieldList => this.fieldsList;
         public IEnumerable<Square> SquaresList => this.squares.SelectMany(s => s);
         public IEnumerable<Row> Rows => this.rows;
         public IEnumerable<Column> Columns => this.columns;
+        public bool IsUnsolvable => CalculateIsUnsolvable();
 
         public Board(int[][] sudokuArray)
         {
             this.Load(sudokuArray);
+        }
+
+        public Board(int[][] numbersArray, int[][][] possibleNumbersArray)
+        {
+            this.Load(numbersArray);
+            this.LoadPossibleNumbers(possibleNumbersArray);
+        }
+
+        private void LoadPossibleNumbers(int[][][] possibleNumbersArray)
+        {
+            for (int y = 0; y < 9; y++)
+            {
+                var fieldsLine = this.fields[y];
+
+                for (int x = 0; x < 9; x++)
+                {
+                    var field = fieldsLine[x];
+                    var possibleNumbers = possibleNumbersArray[y][x];
+                    field.SetPossibleNumbers(possibleNumbers);
+                }
+            }
         }
 
         private void FillBoardWithKnownNumbers(int[][] sudokuArray)
@@ -177,6 +199,75 @@ namespace SudokuSolver
             return sb.ToString();
         }
 
+        public string PrintPossibleNumbers()
+        {
+            var sb = new StringBuilder();
+
+            for (int y = 0; y < 37; y++)
+            {
+                for (int x = 0; x < 37; x++)
+                {
+                    var numberY = y % 4;
+                    var numberX = x % 4;
+                    var squareY = y % 12;
+                    var squareX = x % 12;
+                    var fieldX = (int)Math.Floor((double)x / 4);
+                    var fieldY = (int)Math.Floor((double)y / 4);
+
+                    if (squareY == 0)
+                    {
+                        sb.Append("##");
+                        continue;
+                    }
+
+                    if (squareX == 0)
+                    {
+                        sb.Append("# ");
+                        continue;
+                    }
+
+                    if (numberY == 0)
+                    {
+                        sb.Append("--");
+                        continue;
+                    }
+
+                    if (numberX == 0)
+                    {
+                        sb.Append("| ");
+                        continue;
+                    }
+
+                    var field = this.fields[fieldY][fieldX];
+
+                    if (!field.HasNumber)
+                    {
+                        var possibleNumbers = field.GetFullArray();
+                        var pNumberX = numberX - 1;
+                        var pNumberY = numberY - 1;
+                        var index = (pNumberY * 3) + pNumberX;
+                        var pNumber = possibleNumbers[index];
+                        if (pNumber == 0)
+                        {
+                            sb.Append("  ");
+                        }
+                        else
+                        {
+                            sb.Append($"{pNumber} ");
+                        }
+                    }
+                    else
+                    {
+                        sb.Append("  ");
+                    }
+                }
+
+                sb.Append('\n');
+            }
+
+            return sb.ToString();
+        }
+
         public int[][] ToArray()
         {
             var array = new int[9][];
@@ -188,6 +279,23 @@ namespace SudokuSolver
                 for (int x = 0; x < 9; x++)
                 {
                     array[y][x] = this.fields[y][x].Number;
+                }
+            }
+
+            return array;
+        }
+
+        public int[][][] PossibleNumbersToArray()
+        {
+            var array = new int[9][][];
+
+            for (int y = 0; y < 9; y++)
+            {
+                array[y] = new int[9][];
+
+                for (int x = 0; x < 9; x++)
+                {
+                    array[y][x] = this.fields[y][x].PossibleNumbers;
                 }
             }
 
@@ -242,6 +350,44 @@ namespace SudokuSolver
             }
 
             return alignedSquares;
+        }
+
+        private bool CalculateIsSolved()
+        {
+            var allFieldsFilled = this.fieldsList.All(f => f.HasNumber);
+
+            if (!allFieldsFilled)
+            {
+                return false;
+            }
+
+            var areRowsOk = AllCollectionsHaveDistinctNumbers(this.Rows);
+            var areColumnsOk = AllCollectionsHaveDistinctNumbers(this.Columns);
+            var areSquaresOk = AllCollectionsHaveDistinctNumbers(this.SquaresList);
+
+            return areRowsOk && areColumnsOk && areSquaresOk;
+        }
+
+        private bool CalculateIsUnsolvable()
+        {
+            var areRowsOk = AllCollectionsHaveDistinctNumbers(this.Rows);
+            var areColumnsOk = AllCollectionsHaveDistinctNumbers(this.Columns);
+            var areSquaresOk = AllCollectionsHaveDistinctNumbers(this.SquaresList);
+
+            if (!areRowsOk || !areColumnsOk || !areSquaresOk)
+            {
+                return true;
+            }
+
+            var noPossibleNumbers = this.FieldList.All(f => f.PossibleNumbersCount == 0);
+            var notAllFieldsHaveNumbers = this.FieldList.Any(f => !f.HasNumber);
+
+            return noPossibleNumbers && notAllFieldsHaveNumbers;
+        }
+
+        private bool AllCollectionsHaveDistinctNumbers(IEnumerable<IFieldsCollection> collection)
+        {
+            return collection.All(c => c.AreAllDistinct());
         }
     }
 }

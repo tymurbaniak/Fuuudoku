@@ -1,8 +1,10 @@
 ﻿
+using System.Diagnostics;
 using System.Text;
 
 namespace SudokuSolver
 {
+    [DebuggerDisplay("{Fields}")]
     public class Square : IFieldsCollection
     {
         private Field[][] fields = new Field[3][];
@@ -271,6 +273,21 @@ namespace SudokuSolver
                     this.fields[y][x].RemoveFromPossibleNumbers(number);
                 }
             }
+        }
+
+        internal int[] GetColumnsWithPossibleNumber(int n)
+        {
+            var fields = this.FieldsList.Where(f => f.PossibleNumbers.Contains(n));
+            var xs = fields.Select(f => f.X).Distinct().ToArray();
+
+            return xs;
+        }
+
+        public bool AreAllDistinct()
+        {
+            var fieldsWithNumber = this.Fields.Where(f => f.HasNumber);
+
+            return fieldsWithNumber.Count() == fieldsWithNumber.DistinctBy(f => f.Number).Count();
         }
     }
 }

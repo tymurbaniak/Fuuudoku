@@ -1,6 +1,9 @@
 ﻿
+using System.Diagnostics;
+
 namespace SudokuSolver
 {
+    [DebuggerDisplay("{fields}")]
     public class Row : IFieldsCollection
     {
         private Field[] fields = new Field[9];
@@ -26,6 +29,13 @@ namespace SudokuSolver
                 var setCandidate = setCandidates.First();
                 setCandidate.SetNumber(setCandidate.PossibleNumbers[0]);
             }
+        }
+
+        public bool AreAllDistinct()
+        {
+            var fieldsWithNumber = this.Fields.Where(f => f.HasNumber);
+
+            return fieldsWithNumber.Count() == fieldsWithNumber.DistinctBy(f => f.Number).Count();
         }
     }
 }

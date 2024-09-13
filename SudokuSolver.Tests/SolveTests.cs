@@ -6,10 +6,12 @@
         public void SolveSudokuTest((int[][] sudoku, int[][] solvedSudoku) tc)
         {
             var solver = new Solver();
-            var board = solver.Solve(tc.sudoku);
+            var board = new Board(tc.sudoku);
+            var state = solver.Solve(board);
+            var solvedState = state.GetSolved();
 
-            TestContext.Write(board.ToString());
-            CollectionAssert.AreEqual(tc.solvedSudoku, board.ToArray());
+            TestContext.Write(solvedState.Board.ToString());
+            CollectionAssert.AreEqual(tc.solvedSudoku, solvedState.Board.ToArray());
         }
 
         private static int[][] sudoku1 =
@@ -53,7 +55,66 @@
 
         private static int[][] solvedSudoku2 =
             [
+                [7, 5, 3, 2, 8, 4, 1, 9, 6],
+                [2, 1, 8, 3, 9, 6, 7, 4, 5],
+                [4, 9, 6, 1, 5, 7, 8, 3, 2],
+                [1, 8, 5, 7, 6, 3, 4, 2, 9],
+                [9, 6, 2, 4, 1, 5, 3, 7, 8],
+                [3, 7, 4, 9, 2, 8, 5, 6, 1],
+                [5, 3, 1, 6, 7, 2, 9, 8, 4],
+                [8, 2, 7, 5, 4, 9, 6, 1, 3],
+                [6, 4, 9, 8, 3, 1, 2, 5, 7]
+            ];
 
+        private static int[][] sudoku3 =
+            [
+                [8, 0, 0, 0, 0, 1, 0, 0, 0],
+                [0, 7, 0, 0, 4, 0, 0, 0, 0],
+                [0, 6, 0, 0, 0, 0, 0, 1, 5],
+                [0, 0, 0, 8, 0, 0, 0, 0, 2],
+                [0, 0, 0, 3, 9, 4, 0, 0, 0],
+                [0, 0, 0, 7, 0, 0, 6, 0, 8],
+                [9, 0, 3, 0, 0, 0, 0, 8, 0],
+                [0, 0, 4, 0, 0, 7, 3, 0, 0],
+                [0, 0, 0, 0, 0, 0, 9, 0, 0]
+            ];
+
+        private static int[][] solvedSudoku3 =
+            [
+                [8, 3, 5, 6, 7, 1, 2, 4, 9],
+                [1, 7, 2, 5, 4, 9, 8, 6, 3],
+                [4, 6, 9, 2, 3, 8, 7, 1, 5],
+                [5, 9, 7, 8, 1, 6, 4, 3, 2],
+                [6, 2, 8, 3, 9, 4, 5, 7, 1],
+                [3, 4, 1, 7, 2, 5, 6, 9, 8],
+                [9, 5, 3, 4, 6, 2, 1, 8, 7],
+                [2, 1, 4, 9, 8, 7, 3, 5, 6],
+                [7, 8, 6, 1, 5, 3, 9, 2, 4]
+            ];
+
+        private static int[][] sudoku4 = [
+                [7,0,0,0,0,0,3,0,0],
+                [0,0,5,0,0,9,2,0,1],
+                [0,9,0,4,0,0,0,0,0],
+                [0,0,2,0,0,4,9,0,5],
+                [6,0,0,0,7,0,0,0,0],
+                [0,0,0,0,0,0,0,8,0],
+                [0,0,0,0,0,1,0,3,0],
+                [2,0,0,6,0,0,1,0,8],
+                [0,0,8,0,0,0,0,4,0]
+            ];
+
+        private static int[][] solvedSudoku4 =
+            [
+                [7, 2, 6, 1, 8, 5, 3, 9, 4],
+                [4, 8, 5, 7, 3, 9, 2, 6, 1],
+                [3, 9, 1, 4, 2, 6, 8, 5, 7],
+                [8, 7, 2, 3, 6, 4, 9, 1, 5],
+                [6, 1, 9, 5, 7, 8, 4, 2, 3],
+                [5, 4, 3, 9, 1, 2, 7, 8, 6],
+                [9, 6, 7, 8, 4, 1, 5, 3, 2],
+                [2, 5, 4, 6, 9, 3, 1, 7, 8],
+                [1, 3, 8, 2, 5, 7, 6, 4, 9]
             ];
 
         public static IEnumerable<(int[][], int[][])> TestCases
@@ -61,7 +122,9 @@
             get
             {
                 yield return (sudoku1, solvedSudoku1);
-                //yield return (sudoku2, solvedSudoku2);
+                yield return (sudoku2, solvedSudoku2);
+                yield return (sudoku3, solvedSudoku3);
+                yield return (sudoku4, solvedSudoku4);
             }
         }
     }

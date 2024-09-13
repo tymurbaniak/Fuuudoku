@@ -1,34 +1,67 @@
-﻿
-
-
-
-using System.Data.SqlTypes;
-using System.Diagnostics.CodeAnalysis;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace SudokuSolver
 {
     public class Solver
     {
-        private List<int[][]> history = new List<int[][]>();
+        private List<StateNode> history = new List<StateNode>();
 
-        public Board Solve(int[][] numbersArray)
+        public StateNode Solve(Board board)
         {
-            var board = new Board(numbersArray);
             var counter = 0;
+            StateNode state = new StateNode(board);
+            history.Add(state);
 
-            while (!board.IsSolved)
+            while (!state.IsSolved && !board.IsUnsolvable)
             {
+                state = new StateNode(board);
                 counter++;
-                Solve(board);
-                //save current state
-                this.history.Add(board.ToArray());
+                SolveProcess(board);
+                var poss = board.PrintPossibleNumbers();
+
+                if (BoardDidntChanged(state))
+                {
+                    var fields = board.FieldList
+                        .Where(f => !f.HasNumber)
+                        .ToList();
+
+                    if (!fields.Any())
+                    {
+                        continue;
+                    }
+
+                    fields.Sort((Field a, Field b) => a.PossibleNumbersCount.CompareTo(b.PossibleNumbersCount));
+                    var field = fields.First();
+
+                    foreach (var possibleNumber in field.PossibleNumbers)
+                    {
+                        var nextBoard = new Board(board.ToArray());
+                        var childField = nextBoard.FieldList.Single(f => f.X == field.X && f.Y == field.Y);
+                        childField.RemoveFromPossibleNumbers(possibleNumber);
+                        var childState = new Solver().Solve(nextBoard);
+                        state.AddChildState(childState);
+                    }
+                }
+
+                history.Add(state);
             }
 
-            return board;
+            return state;
         }
 
-        private void Solve(Board board)
+        private bool BoardDidntChanged(StateNode state)
+        {
+            if (!this.history.Any())
+            {
+                return true;
+            }
+
+            var previousState = this.history.Last();
+
+            return previousState.Equals(state);
+        }
+
+        private void SolveProcess(Board board)
         {
             CheckSquares(board);
             CheckAlignedSquares(board);
@@ -43,69 +76,25 @@ namespace SudokuSolver
 
         private void CheckColumnsPairs(Board board)
         {
-            foreach (var row in board.Columns)
-            {
-                var pairs = new List<Tuple<Field, Field>>();
-
-                for (int n1 = 1; n1 <= 9; n1++)
-                {
-                    for (int n2 = 1; n2 <= 9; n2++)
-                    {
-                        if (n1 == n2)
-                        {
-                            continue;
-                        }
-
-                        var fieldsWithFirsNumber = row.Fields.Where(f => f.PossibleNumbers.Contains(n1)).ToHashSet(new FieldsComparer());
-                        var fieldsWithSecondNumber = row.Fields.Where(f => f.PossibleNumbers.Contains(n2)).ToHashSet(new FieldsComparer());
-
-                        if (fieldsWithFirsNumber.Count() == 2 && fieldsWithSecondNumber.Count() == 2
-                            && fieldsWithFirsNumber.SetEquals(fieldsWithSecondNumber))
-                        {
-                            foreach (var field in fieldsWithFirsNumber)
-                            {
-                                field.RemoveAllPossibleNumbersExcept([n1, n2]);
-                            }
-                        }
-                    }
-                }
-            }
+            var fieldsCollections = board.Columns;
+            CheckPairsInFieldsCollection(fieldsCollections);
         }
 
         private void CheckRowsPairs(Board board)
         {
-            foreach (var row in board.Rows)
-            {
-                var pairs = new List<Tuple<Field, Field>>();
-
-                for (int n1 = 1; n1 <= 9; n1++)
-                {
-                    for (int n2 = 1; n2 <= 9; n2++)
-                    {
-                        if (n1 == n2)
-                        {
-                            continue;
-                        }
-
-                        var fieldsWithFirsNumber = row.Fields.Where(f => f.PossibleNumbers.Contains(n1)).ToHashSet(new FieldsComparer());
-                        var fieldsWithSecondNumber = row.Fields.Where(f => f.PossibleNumbers.Contains(n2)).ToHashSet(new FieldsComparer());
-
-                        if (fieldsWithFirsNumber.Count() == 2 && fieldsWithSecondNumber.Count() == 2
-                            && fieldsWithFirsNumber.SetEquals(fieldsWithSecondNumber))
-                        {
-                            foreach (var field in fieldsWithFirsNumber)
-                            {
-                                field.RemoveAllPossibleNumbersExcept([n1, n2]);
-                            }
-                        }
-                    }
-                }
-            }
+            var fieldsCollections = board.Rows;
+            CheckPairsInFieldsCollection(fieldsCollections);
         }
 
         private void CheckSquaresPairs(Board board)
         {
-            foreach (var square in board.SquaresList)
+            var fieldsCollections = board.SquaresList;
+            CheckPairsInFieldsCollection(fieldsCollections);
+        }
+
+        private static void CheckPairsInFieldsCollection(IEnumerable<IFieldsCollection> fieldsCollections)
+        {
+            foreach (IFieldsCollection fieldsCollection in fieldsCollections)
             {
                 //if there are exactly 2 fields with same pair in square, all other possible numbers can be removed from those fields
                 var pairs = new List<Tuple<Field, Field>>();
@@ -119,8 +108,8 @@ namespace SudokuSolver
                             continue;
                         }
 
-                        var fieldsWithFirsNumber = square.FieldsList.Where(f => f.PossibleNumbers.Contains(n1)).ToHashSet(new FieldsComparer());
-                        var fieldsWithSecondNumber = square.FieldsList.Where(f => f.PossibleNumbers.Contains(n2)).ToHashSet(new FieldsComparer());
+                        var fieldsWithFirsNumber = fieldsCollection.Fields.Where(f => f.PossibleNumbers.Contains(n1)).ToHashSet(new FieldsComparer());
+                        var fieldsWithSecondNumber = fieldsCollection.Fields.Where(f => f.PossibleNumbers.Contains(n2)).ToHashSet(new FieldsComparer());
 
                         if (fieldsWithFirsNumber.Count() == 2 && fieldsWithSecondNumber.Count() == 2
                             && fieldsWithFirsNumber.SetEquals(fieldsWithSecondNumber))
@@ -134,7 +123,6 @@ namespace SudokuSolver
                 }
             }
         }
-
         public class FieldsComparer : IEqualityComparer<Field>
         {
             public bool Equals(Field? x, Field? y)
@@ -184,34 +172,7 @@ namespace SudokuSolver
         private void CheckAlignedSquares(Board board)
         {
             CheckVerticalyAlignedSquares(board);
-            //CheckHorizontalyAlignedSquares(board);
-
-            //horizontal            
-            foreach (var square in board.SquaresList)
-            {
-                var alignedSquares = board.GetHorizontalyAlignedSquares(square.Sy, square.Sx);
-                var ys = square.GetSolvedRows();
-
-                foreach (var alignedSquare in alignedSquares)
-                {
-                    foreach (var y in ys)
-                    {
-                        var number = alignedSquare.GetOnlyPossibleNumberForRow(y);
-
-                        if (number == -1)
-                        {
-                            continue;
-                        }
-
-                        var otherVerticalyAlignedSquares = board.GetHorizontalyAlignedSquares(y, [square.Sx, alignedSquare.Sx]);
-
-                        foreach (var otherSquare in otherVerticalyAlignedSquares)
-                        {
-                            otherSquare.RemovePossibleNumberFromRow(number, y);
-                        }
-                    }
-                }
-            }
+            CheckHorizontalyAlignedSquares(board);
         }
 
         private void CheckHorizontalyAlignedSquares(Board board)
@@ -220,20 +181,14 @@ namespace SudokuSolver
 
             foreach (var square in squares)
             {
-                var alignedSquares = board.GetHorizontalyAlignedSquares(square.Sx, square.Sy);
+                var alignedSquares = board.GetHorizontalyAlignedSquares(square.Sy, square.Sx);
 
                 for (int n = 1; n <= 9; n++)
                 {
-                    //get fields with possible number and check if they are in same column
                     var groups = square.FieldsList
                         .Where(f => f.PossibleNumbers.Contains(n))
                         .GroupBy(f => f.Y);
-                    var test1 = square.FieldsList
-                        .Where(f => f.PossibleNumbers.Contains(n))
-                        .ToArray();
 
-                    //there is only one column with number n, so this column in aligned squares
-                    //can't have number n
                     if (groups.Count() == 1)
                     {
                         var y = groups.First().Key;
@@ -254,81 +209,78 @@ namespace SudokuSolver
             foreach (var square in squares)
             {
                 var alignedSquares = board.GetVerticalyAlignedSquares(square.Sx, square.Sy);
-                var xs = square.GetSolvedColumns();
-
-                foreach (var alignedSquare in alignedSquares)
-                {
-                    foreach (var x in xs)
-                    {
-                        var number = alignedSquare.GetOnlyPossibleNumberForColumn(x);
-
-                        if (number == -1)
-                        {
-                            continue;
-                        }
-
-                        var otherVerticalyAlignedSquares = board.GetVerticalyAlignedSquares(square.Sx, [square.Sy, alignedSquare.Sy]);
-
-                        foreach (var otherSquare in otherVerticalyAlignedSquares)
-                        {
-                            otherSquare.RemovePossibleNumberFromColumn(number, x);
-                        }
-                    }
-                }
-
-                foreach (var x in xs)
-                {
-                    var solvedColumn = square.GetSquareColumn(x);
-                    var solvedColumnNumbers = solvedColumn.Select(c => c.Number);
-                    //check in aligned squares if there are columns, that have different numbers than solved column
-
-                    foreach (var alignedSquare in alignedSquares)
-                    {
-                        int[] axs = alignedSquare.GetColumnsWithDifferentNumbers(solvedColumn.Select(f => f.Number), x);
-
-                        var otherVerticalyAlignedSquares = board.GetVerticalyAlignedSquares(square.Sx, [square.Sy, alignedSquare.Sy]);
-
-                        foreach (var ax in axs)
-                        {
-                            var differentNumbers = alignedSquare
-                                .GetSquareColumn(ax)
-                                .Where(f => f.HasNumber)
-                                .Select(f => f.Number)
-                                .Except(solvedColumnNumbers);
-
-                            foreach (var number in differentNumbers)
-                            {
-                                foreach (var otherSquare in otherVerticalyAlignedSquares)
-                                {
-                                    otherSquare.RemovePossibleNumberFromAllColumnsExcept(number, [x, ax]);
-                                }
-                            }
-                        }
-                    }
-                }
 
                 //check square columns with only possible numbers
                 for (int n = 1; n <= 9; n++)
                 {
-                    //get fields with possible number and check if they are in same column
-                    var groups = square.FieldsList
-                        .Where(f => f.PossibleNumbers.Contains(n))
-                        .GroupBy(f => f.X);
-                    var test1 = square.FieldsList
-                        .Where(f => f.PossibleNumbers.Contains(n))
-                        .ToArray();
+                    CheckSingleColumns(square, alignedSquares, n);
+                    CheckMultiColumns(square, alignedSquares, n);
+                }
+            }
+        }
 
-                    //there is only one column with number n, so this column in aligned squares
-                    //can't have number n
-                    if (groups.Count() == 1)
-                    {
-                        var x = groups.First().Key;
+        private static void CheckMultiColumns(Square square, IEnumerable<Square> alignedSquares, int n)
+        {
+            //if aligned squares have possible number in same columns
+            //the square must have number in remaining columns
+            var fieldsList = new List<Field>();
+            var xsWithNumber = square.GetColumnsWithPossibleNumber(n);
 
-                        foreach (var alignedSquare in alignedSquares)
-                        {
-                            alignedSquare.RemovePossibleNumberFromColumn(n, x);
-                        }
-                    }
+            foreach (var alignedSquare in alignedSquares)
+            {
+                var fields = alignedSquares
+                .SelectMany(s => s.FieldsList)
+                .Where(f => f.PossibleNumbers.Contains(n));
+
+                //if aligned square doesnt have fields it will give to much control
+                //to other aligned square
+                if (!fields.Any())
+                {
+                    return;
+                }
+
+                fieldsList.AddRange(fields);
+            }
+
+            var alignedGroups = fieldsList.GroupBy(f => f.X);
+
+            if (alignedGroups.Count() == 2)
+            {
+                var xs = alignedGroups
+                    .Select(g => g.Key);
+                var persistingXs = xsWithNumber
+                    .Except(xs);
+
+                if (!persistingXs.Any())
+                {
+                    return;
+                }
+
+                xs = xs.Except(persistingXs);
+
+                foreach (var x in xs)
+                {
+                    square.RemovePossibleNumberFromColumn(n, x);
+                }
+            }
+        }
+
+        private static void CheckSingleColumns(Square square, IEnumerable<Square> alignedSquares, int n)
+        {
+            //get fields with possible number and check if they are in same column
+            var groups = square.FieldsList
+                .Where(f => f.PossibleNumbers.Contains(n))
+                .GroupBy(f => f.X);
+
+            //there is only one column with number n, so this column in aligned squares
+            //can't have number n
+            if (groups.Count() == 1)
+            {
+                var x = groups.First().Key;
+
+                foreach (var alignedSquare in alignedSquares)
+                {
+                    alignedSquare.RemovePossibleNumberFromColumn(n, x);
                 }
             }
         }
