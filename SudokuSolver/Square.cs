@@ -5,14 +5,13 @@ using System.Text;
 namespace SudokuSolver
 {
     [DebuggerDisplay("{Fields}")]
-    public class Square : IFieldsCollection
+    public class Square : FieldsCollection
     {
         private Field[][] fields = new Field[3][];
         public int Sx { get; set; }
         public int Sy { get; set; }
 
-        public IEnumerable<Field> FieldsList => this.fields.SelectMany(f => f);
-        public IEnumerable<Field> Fields => this.FieldsList;
+        public override IEnumerable<Field> Fields => this.fields.SelectMany(f => f);
 
         public Square(int sx, int sy)
         {
@@ -25,29 +24,9 @@ namespace SudokuSolver
             }
         }
 
-        internal void AddField(Field field, int x, int y)
+        public override void Add(Field field)
         {
-            this.fields[y - (this.Sy * 3)][x - (this.Sx * 3)] = field;
-        }
-
-        internal void RemoveNumberFromPossibleNumbers(int number)
-        {
-            foreach (var fieldLine in this.fields)
-            {
-                foreach (var field in fieldLine)
-                {
-                    field.RemoveFromPossibleNumbers(number);
-                }
-            }
-
-            var fieldsList = this.fields.SelectMany(f => f);
-            var setCandidates = fieldsList.Where(f => f.PossibleNumbers.Length == 1);
-
-            if (setCandidates.Count() == 1)
-            {
-                var setCandidate = setCandidates.First();
-                setCandidate.SetNumber(setCandidate.PossibleNumbers[0]);
-            }
+            this.fields[field.Y - (this.Sy * 3)][field.X - (this.Sx * 3)] = field;
         }
 
         public override string ToString()
@@ -160,7 +139,7 @@ namespace SudokuSolver
 
             for (int i = 1; i < 9; i++)
             {
-                var fieldsWithSamePossibleNumbers = this.FieldsList
+                var fieldsWithSamePossibleNumbers = this.Fields
                     .Where(f => f.PossibleNumbers.Contains(i))
                     .ToArray();
 
@@ -209,7 +188,7 @@ namespace SudokuSolver
 
             for (int i = 1; i < 9; i++)
             {
-                var fieldsWithSamePossibleNumbers = this.FieldsList
+                var fieldsWithSamePossibleNumbers = this.Fields
                     .Where(f => f.PossibleNumbers.Contains(i))
                     .ToArray();
 
@@ -277,17 +256,10 @@ namespace SudokuSolver
 
         internal int[] GetColumnsWithPossibleNumber(int n)
         {
-            var fields = this.FieldsList.Where(f => f.PossibleNumbers.Contains(n));
+            var fields = this.Fields.Where(f => f.PossibleNumbers.Contains(n));
             var xs = fields.Select(f => f.X).Distinct().ToArray();
 
             return xs;
-        }
-
-        public bool AreAllDistinct()
-        {
-            var fieldsWithNumber = this.Fields.Where(f => f.HasNumber);
-
-            return fieldsWithNumber.Count() == fieldsWithNumber.DistinctBy(f => f.Number).Count();
         }
     }
 }

@@ -185,7 +185,7 @@ namespace SudokuSolver
 
                 for (int n = 1; n <= 9; n++)
                 {
-                    var groups = square.FieldsList
+                    var groups = square.Fields
                         .Where(f => f.PossibleNumbers.Contains(n))
                         .GroupBy(f => f.Y);
 
@@ -229,7 +229,7 @@ namespace SudokuSolver
             foreach (var alignedSquare in alignedSquares)
             {
                 var fields = alignedSquares
-                .SelectMany(s => s.FieldsList)
+                .SelectMany(s => s.Fields)
                 .Where(f => f.PossibleNumbers.Contains(n));
 
                 //if aligned square doesnt have fields it will give to much control
@@ -268,7 +268,7 @@ namespace SudokuSolver
         private static void CheckSingleColumns(Square square, IEnumerable<Square> alignedSquares, int n)
         {
             //get fields with possible number and check if they are in same column
-            var groups = square.FieldsList
+            var groups = square.Fields
                 .Where(f => f.PossibleNumbers.Contains(n))
                 .GroupBy(f => f.X);
 

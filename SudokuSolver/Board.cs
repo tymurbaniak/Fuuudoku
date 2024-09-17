@@ -74,17 +74,10 @@ namespace SudokuSolver
 
                 for (int x = 0; x < 9; x++)
                 {
-                    var field = new Field(x, y);
                     var column = GetColumn(x);
                     var square = GetSquare(x, y);
-                    field.SetSquare(square);
-                    field.SetColumn(column);
-                    field.SetRow(row);
-
+                    var field = new Field(x, y, [row, column, square]);
                     fieldsLine[x] = field;
-                    row.AddField(field, x);
-                    column.AddField(field, y);
-                    square.AddField(field, x, y);
                 }
             }
         }
