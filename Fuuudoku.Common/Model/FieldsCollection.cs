@@ -1,17 +1,17 @@
-﻿namespace SudokuSolver
+﻿namespace Fuuudoku.Common.Model
 {
-    public abstract class FieldsCollection : IFieldsCollection
+    public abstract class FieldsCollection
     {
         public abstract IEnumerable<Field> Fields { get; }
         public abstract void Add(Field field);
         public void RemoveNumberFromPossibleNumbers(int number)
         {
-            foreach (var field in this.Fields)
+            foreach (var field in Fields)
             {
                 field.RemoveFromPossibleNumbers(number);
             }
 
-            var setCandidates = this.Fields.Where(f => f.PossibleNumbers.Length == 1);
+            var setCandidates = Fields.Where(f => f.PossibleNumbers.Length == 1);
 
             if (setCandidates.Count() == 1)
             {
@@ -20,9 +20,9 @@
             }
         }
 
-        public bool AreAllDistinct()
+        internal bool AreAllDistinct()
         {
-            var fieldsWithNumber = this.Fields.Where(f => f.HasNumber);
+            var fieldsWithNumber = Fields.Where(f => f.HasNumber);
 
             return fieldsWithNumber.Count() == fieldsWithNumber.DistinctBy(f => f.Number).Count();
         }

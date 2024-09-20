@@ -1,25 +1,29 @@
 ﻿
+
+
+using Fuuudoku.Common.Model;
+
 namespace SudokuSolver
 {
-    public class StateNode : IEquatable<StateNode>
+    internal class StateNode : IEquatable<StateNode>
     {
         private List<StateNode> states = new List<StateNode>();
         private Board board;
 
-        public int[][] NumbersArray { get; }
-        public int[][][] PossibleNumbersArray { get; }
-        public IReadOnlyList<StateNode> States => states;
-        public bool IsSolved => CheckSolveState();
-        public Board Board => board;
+        internal int[][] NumbersArray { get; }
+        internal int[][][] PossibleNumbersArray { get; }
+        internal IReadOnlyList<StateNode> States => states;
+        internal bool IsSolved => CheckSolveState();
+        internal Board Board => board;
 
-        public StateNode(Board board)
+        internal StateNode(Board board)
         {
             this.board = board;
             this.NumbersArray = board.ToArray();
             this.PossibleNumbersArray = board.PossibleNumbersToArray();
         }
 
-        public StateNode GetSolved()
+        internal StateNode GetSolved()
         {
             if (this.board.IsSolved)
             {
