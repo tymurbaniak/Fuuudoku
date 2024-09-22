@@ -3,28 +3,32 @@ using System.Diagnostics;
 
 namespace Fuuudoku.Common.Model
 {
-    [DebuggerDisplay("{Fields}")]
+    [DebuggerDisplay("Square: {Fields}")]
     public class Square : FieldsCollection
     {
-        private Field[][] fields = new Field[3][];
+        private Field[][] fields;
         public int Sx { get; set; }
         public int Sy { get; set; }
+        public int SquareSize { get; }
+
         public override IEnumerable<Field> Fields => fields.SelectMany(f => f);
 
-        internal Square(int sx, int sy)
+        internal Square(int sx, int sy, int collectionSize) : base(collectionSize)
         {
             Sx = sx;
             Sy = sy;
+            this.SquareSize = (int)Math.Sqrt(collectionSize);
+            this.fields = new Field[SquareSize][];
 
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < SquareSize; i++)
             {
-                fields[i] = new Field[3];
+                fields[i] = new Field[SquareSize];
             }
         }
 
         public override void Add(Field field)
         {
-            fields[field.Y - Sy * 3][field.X - Sx * 3] = field;
+            fields[field.Y - Sy * this.SquareSize][field.X - Sx * this.SquareSize] = field;
         }
 
         public void RemovePossibleNumberFromColumn(int number, int x)

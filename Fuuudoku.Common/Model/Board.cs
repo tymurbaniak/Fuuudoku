@@ -1,5 +1,4 @@
 ﻿using System.Runtime.CompilerServices;
-using System.Text;
 
 [assembly: InternalsVisibleToAttribute("SudokuSolver.Tests")]
 
@@ -7,10 +6,13 @@ namespace Fuuudoku.Common.Model
 {
     public class Board
     {
-        private Field[][] fields = new Field[9][];
-        private Row[] rows = new Row[9];
-        private Column[] columns = new Column[9];
-        private Square[][] squares = new Square[3][];
+        private Field[][] fields;
+        private Row[] rows;
+        private Column[] columns;
+        private Square[][] squares;
+
+        public int SmallSquareSize { get; }
+        public int BigSquareSize { get; }
         private IEnumerable<Field> fieldsList => fields.SelectMany(f => f);
         public bool IsSolved => CalculateIsSolved();
         public IEnumerable<Field> FieldList => fieldsList;
@@ -25,18 +27,42 @@ namespace Fuuudoku.Common.Model
             .Concat(squares.SelectMany(s => s))
             .ToList();
 
-        public Board(int[][] sudokuArray)
+        public Board(int[][] sudokuArray) : this(GetSizeFromArray(sudokuArray))
         {
-            Load(sudokuArray);
+            FillBoardWithKnownNumbers(sudokuArray);
+        }
+
+        private static int GetSizeFromArray(int[][] sudokuArray)
+        {
+            var smallSquareSize = Math.Sqrt(sudokuArray.Length);
+
+            if (!double.IsInteger(smallSquareSize))
+            {
+                throw new Exception($"Square root of array length should be a positive integer");
+            }
+
+            return (int)smallSquareSize;
+        }
+
+        public Board(int smallSquareSize = 3)
+        {
+            this.SmallSquareSize = smallSquareSize;
+            this.BigSquareSize = (int)Math.Pow(smallSquareSize, 2);
+            this.fields = new Field[this.BigSquareSize][];
+            this.rows = new Row[this.BigSquareSize];
+            this.columns = new Column[this.BigSquareSize];
+            this.squares = new Square[this.SmallSquareSize][];
+
+            CreateEmptyBoard();
         }
 
         private void FillBoardWithKnownNumbers(int[][] sudokuArray)
         {
-            for (int y = 0; y < 9; y++)
+            for (int y = 0; y < this.BigSquareSize; y++)
             {
                 var fieldsLine = fields[y];
 
-                for (int x = 0; x < 9; x++)
+                for (int x = 0; x < this.BigSquareSize; x++)
                 {
                     var field = fieldsLine[x];
                     var number = sudokuArray[y][x];
@@ -47,21 +73,28 @@ namespace Fuuudoku.Common.Model
 
         private void CreateEmptyBoard()
         {
-            for (int y = 0; y < 9; y++)
+            var possibleNumbers = new int[this.BigSquareSize];
+
+            for (int i = 1; i <= this.BigSquareSize; i++)
+            {
+                possibleNumbers[i - 1] = i;
+            }
+
+            for (int y = 0; y < this.BigSquareSize; y++)
             {
                 if (fields[y] == null)
                 {
-                    fields[y] = new Field[9];
+                    fields[y] = new Field[this.BigSquareSize];
                 }
 
                 var fieldsLine = fields[y];
                 var row = GetRow(y);
 
-                for (int x = 0; x < 9; x++)
+                for (int x = 0; x < this.BigSquareSize; x++)
                 {
                     var column = GetColumn(x);
                     var square = GetSquare(x, y);
-                    var field = new Field(x, y, [row, column, square]);
+                    var field = new Field(x, y, [row, column, square], possibleNumbers);
                     fieldsLine[x] = field;
                 }
             }
@@ -71,7 +104,7 @@ namespace Fuuudoku.Common.Model
         {
             if (rows[y] == null)
             {
-                rows[y] = new Row();
+                rows[y] = new Row(this.BigSquareSize);
             }
 
             return rows[y];
@@ -81,7 +114,7 @@ namespace Fuuudoku.Common.Model
         {
             if (columns[x] == null)
             {
-                columns[x] = new Column();
+                columns[x] = new Column(this.BigSquareSize);
             }
 
             return columns[x];
@@ -89,17 +122,17 @@ namespace Fuuudoku.Common.Model
 
         private Square GetSquare(int x, int y)
         {
-            var sx = (int)Math.Floor((double)x / 3);
-            var sy = (int)Math.Floor((double)y / 3);
+            var sx = (int)Math.Floor((double)x / this.SmallSquareSize);
+            var sy = (int)Math.Floor((double)y / this.SmallSquareSize);
 
             if (squares[sy] == null)
             {
-                squares[sy] = new Square[3];
+                squares[sy] = new Square[this.SmallSquareSize];
             }
 
             if (squares[sy][sx] == null)
             {
-                squares[sy][sx] = new Square(sx, sy);
+                squares[sy][sx] = new Square(sx, sy, this.BigSquareSize);
             }
 
             return squares[sy][sx];
@@ -107,13 +140,13 @@ namespace Fuuudoku.Common.Model
 
         public int[][] ToArray()
         {
-            var array = new int[9][];
+            var array = new int[this.BigSquareSize][];
 
-            for (int y = 0; y < 9; y++)
+            for (int y = 0; y < this.BigSquareSize; y++)
             {
-                array[y] = new int[9];
+                array[y] = new int[this.BigSquareSize];
 
-                for (int x = 0; x < 9; x++)
+                for (int x = 0; x < this.BigSquareSize; x++)
                 {
                     array[y][x] = fields[y][x].Number;
                 }
@@ -124,25 +157,19 @@ namespace Fuuudoku.Common.Model
 
         public int[][][] PossibleNumbersToArray()
         {
-            var array = new int[9][][];
+            var array = new int[this.BigSquareSize][][];
 
-            for (int y = 0; y < 9; y++)
+            for (int y = 0; y < this.BigSquareSize; y++)
             {
-                array[y] = new int[9][];
+                array[y] = new int[this.BigSquareSize][];
 
-                for (int x = 0; x < 9; x++)
+                for (int x = 0; x < this.BigSquareSize; x++)
                 {
                     array[y][x] = fields[y][x].PossibleNumbers;
                 }
             }
 
             return array;
-        }
-
-        internal void Load(int[][] sudokuArray)
-        {
-            CreateEmptyBoard();
-            FillBoardWithKnownNumbers(sudokuArray);
         }
 
         public IEnumerable<Square> GetVerticalyAlignedSquares(int sx, int sy)
@@ -198,20 +225,12 @@ namespace Fuuudoku.Common.Model
                 return false;
             }
 
-            var areRowsOk = AllCollectionsHaveDistinctNumbers(Rows);
-            var areColumnsOk = AllCollectionsHaveDistinctNumbers(Columns);
-            var areSquaresOk = AllCollectionsHaveDistinctNumbers(SquaresList);
-
-            return areRowsOk && areColumnsOk && areSquaresOk;
+            return AllCollectionsHaveDistinctNumbers();
         }
 
         private bool CalculateIsUnsolvable()
         {
-            var areRowsOk = AllCollectionsHaveDistinctNumbers(Rows);
-            var areColumnsOk = AllCollectionsHaveDistinctNumbers(Columns);
-            var areSquaresOk = AllCollectionsHaveDistinctNumbers(SquaresList);
-
-            if (!areRowsOk || !areColumnsOk || !areSquaresOk)
+            if (!AllCollectionsHaveDistinctNumbers())
             {
                 return true;
             }
@@ -222,9 +241,9 @@ namespace Fuuudoku.Common.Model
             return noPossibleNumbers && notAllFieldsHaveNumbers;
         }
 
-        private bool AllCollectionsHaveDistinctNumbers(IEnumerable<FieldsCollection> collection)
+        private bool AllCollectionsHaveDistinctNumbers()
         {
-            return collection.All(c => c.AreAllDistinct());
+            return this.SubCollections.All(c => c.AreAllDistinct());
         }
     }
 }

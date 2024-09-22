@@ -3,6 +3,14 @@
     public abstract class FieldsCollection
     {
         public abstract IEnumerable<Field> Fields { get; }
+        public int CollectionSize { get; }
+
+
+        public FieldsCollection(int collectionSize)
+        {
+            this.CollectionSize = collectionSize;
+        }
+
         public abstract void Add(Field field);
         public void RemoveNumberFromPossibleNumbers(int number)
         {

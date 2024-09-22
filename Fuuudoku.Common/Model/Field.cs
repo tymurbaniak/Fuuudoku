@@ -6,19 +6,25 @@ namespace Fuuudoku.Common.Model
     [DebuggerDisplay("PossibleNumbersCount: {PossibleNumbersCount}")]
     public class Field
     {
-        public int[] PossibleNumbers { get; private set; } = new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+        public int[] PossibleNumbers { get; private set; }
         public int X { get; }
         public int Y { get; }
         internal IEnumerable<FieldsCollection> Containors { get; }
+
+        private int initialPossibleNumbersArraySize;
+
         public int Number { get; private set; } = 0;
         public int PossibleNumbersCount => PossibleNumbers.Length;
         public bool HasNumber { get; private set; } = false;
 
-        internal Field(int x, int y, IEnumerable<FieldsCollection> containors)
+        internal Field(int x, int y, IEnumerable<FieldsCollection> containors, int[] initialPossibleNumbers)
         {
-            X = x;
-            Y = y;
-            Containors = containors;
+            this.X = x;
+            this.Y = y;
+            this.Containors = containors;
+            this.initialPossibleNumbersArraySize = initialPossibleNumbers.Length;
+            this.PossibleNumbers = new int[this.initialPossibleNumbersArraySize];
+            Array.Copy(initialPossibleNumbers, this.PossibleNumbers, this.initialPossibleNumbersArraySize);
 
             foreach (var containor in containors)
             {
@@ -65,9 +71,11 @@ namespace Fuuudoku.Common.Model
 
         internal int[] GetFullArray()
         {
-            var fullArray = new int[9];
+            var size = this.initialPossibleNumbersArraySize;
 
-            for (int i = 1; i <= 9; i++)
+            var fullArray = new int[size];
+
+            for (int i = 1; i <= size; i++)
             {
                 if (PossibleNumbers.Contains(i))
                 {

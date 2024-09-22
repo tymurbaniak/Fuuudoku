@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Fuuudoku.Common\Fuuudoku.Common.csproj" />
+  </ItemGroup>
+
 </Project>

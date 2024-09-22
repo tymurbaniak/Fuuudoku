@@ -3,10 +3,10 @@ using System.Diagnostics;
 
 namespace Fuuudoku.Common.Model
 {
-    [DebuggerDisplay("{Fields}")]
-    public class Column : FieldsCollection
+    [DebuggerDisplay("Column: {Fields}")]
+    public class Column(int collectionSize) : FieldsCollection(collectionSize)
     {
-        private Field[] fields = new Field[9];
+        private Field[] fields = new Field[collectionSize];
 
         public override IEnumerable<Field> Fields => fields;
 
