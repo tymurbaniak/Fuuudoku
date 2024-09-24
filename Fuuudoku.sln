@@ -3,17 +3,19 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.35027.167
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fuuudoku.CLI", "SudokuSolver\Fuuudoku.CLI.csproj", "{D86D1AC6-4533-48CA-8672-4623540DB778}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fuuudoku.Solver", "Fuuudoku.Solver\Fuuudoku.Solver.csproj", "{A3BC0E6B-04FA-49F0-8F0B-CD8260A69B54}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fuuudoku.Solver.Tests", "SudokuSolver.Tests\Fuuudoku.Solver.Tests.csproj", "{2B0B57F7-B6F8-4370-A865-A9BC46149A37}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fuuudoku.Generator", "Fuuudoku.Generator\Fuuudoku.Generator.csproj", "{32BCA29E-E3B9-428C-BFF1-A4B00D25D3AE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fuuudoku.Solver", "Fuuudoku.Solver\Fuuudoku.Solver.csproj", "{A3BC0E6B-04FA-49F0-8F0B-CD8260A69B54}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fuuudoku.Common", "Fuuudoku.Common\Fuuudoku.Common.csproj", "{E71BDE61-ABA9-464B-BAA7-CF23763F39E5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fuuudoku.Generator", "Fuuudoku.Generator\Fuuudoku.Generator.csproj", "{32BCA29E-E3B9-428C-BFF1-A4B00D25D3AE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fuuudoku.Generator.Tests", "Fuuudoku.Generator.Tests\Fuuudoku.Generator.Tests.csproj", "{E6EC600C-C3D6-47D3-AE26-821949A00931}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fuuudoku.Common", "Fuuudoku.Common\Fuuudoku.Common.csproj", "{E71BDE61-ABA9-464B-BAA7-CF23763F39E5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fuuudoku.CLI.Tests", "Fuuudoku.CLI.Tests\Fuuudoku.CLI.Tests.csproj", "{6081E215-5962-41F4-A802-CDF49F6839D2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fuuudoku.Generator.Tests", "Fuuudoku.Generator.Tests\Fuuudoku.Generator.Tests.csproj", "{E6EC600C-C3D6-47D3-AE26-821949A00931}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fuuudoku.CLI", "Fuuudoku.CLI\Fuuudoku.CLI.csproj", "{E42E6CC4-653C-4AB1-B06B-495754A1BF8C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fuuudoku.Solver.Tests", "Fuuudoku.Solver.Tests\Fuuudoku.Solver.Tests.csproj", "{F333DDC9-F4A3-4F65-B3E4-DFE3E0442783}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,14 +23,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{D86D1AC6-4533-48CA-8672-4623540DB778}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D86D1AC6-4533-48CA-8672-4623540DB778}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D86D1AC6-4533-48CA-8672-4623540DB778}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D86D1AC6-4533-48CA-8672-4623540DB778}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2B0B57F7-B6F8-4370-A865-A9BC46149A37}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2B0B57F7-B6F8-4370-A865-A9BC46149A37}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2B0B57F7-B6F8-4370-A865-A9BC46149A37}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2B0B57F7-B6F8-4370-A865-A9BC46149A37}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A3BC0E6B-04FA-49F0-8F0B-CD8260A69B54}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A3BC0E6B-04FA-49F0-8F0B-CD8260A69B54}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A3BC0E6B-04FA-49F0-8F0B-CD8260A69B54}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -45,6 +39,18 @@ Global
 		{E6EC600C-C3D6-47D3-AE26-821949A00931}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E6EC600C-C3D6-47D3-AE26-821949A00931}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E6EC600C-C3D6-47D3-AE26-821949A00931}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6081E215-5962-41F4-A802-CDF49F6839D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6081E215-5962-41F4-A802-CDF49F6839D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6081E215-5962-41F4-A802-CDF49F6839D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6081E215-5962-41F4-A802-CDF49F6839D2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E42E6CC4-653C-4AB1-B06B-495754A1BF8C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E42E6CC4-653C-4AB1-B06B-495754A1BF8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E42E6CC4-653C-4AB1-B06B-495754A1BF8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E42E6CC4-653C-4AB1-B06B-495754A1BF8C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F333DDC9-F4A3-4F65-B3E4-DFE3E0442783}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F333DDC9-F4A3-4F65-B3E4-DFE3E0442783}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F333DDC9-F4A3-4F65-B3E4-DFE3E0442783}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F333DDC9-F4A3-4F65-B3E4-DFE3E0442783}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -9,11 +9,20 @@ using Fuuudoku.Solver.Checkers;
 
 namespace SudokuSolver
 {
-    internal class Solver
+    public class Solver
     {
         private List<StateNode> history = new List<StateNode>();
 
-        internal StateNode Solve(Board board)
+        public static Board Solve(Board board)
+        {
+            var solver = new Solver();
+            var statesTree = solver.StateSolve(board);
+            var solvedState = statesTree.GetSolved();
+
+            return solvedState.Board;
+        }
+
+        internal StateNode StateSolve(Board board)
         {
             var counter = 0;
             StateNode state = new StateNode(board);
@@ -44,7 +53,7 @@ namespace SudokuSolver
                         var nextBoard = new Board(board.ToArray());
                         var childField = nextBoard.FieldList.Single(f => f.X == field.X && f.Y == field.Y);
                         childField.RemoveFromPossibleNumbers(possibleNumber);
-                        var childState = new Solver().Solve(nextBoard);
+                        var childState = new Solver().StateSolve(nextBoard);
                         state.AddChildState(childState);
                     }
                 }

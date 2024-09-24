@@ -11,7 +11,7 @@ namespace SudokuSolver.Tests
         {
             var solver = new Solver();
             var board = new Board(tc.sudoku);
-            var state = solver.Solve(board);
+            var state = solver.StateSolve(board);
             var solvedState = state.GetSolved();
 
             TestContext.Write(solvedState.Board.ToString());
